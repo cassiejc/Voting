@@ -1,0 +1,34 @@
+[
+  {
+    "id": 0,
+    "name": "Boni",
+    "picture": "https://placehold.co/96x96/ADD8E6/000000?text=Boni",
+    "age": 22,
+    "style": "Casual",
+    "location": "Jakarta"
+  },
+  {
+    "id": 1,
+    "name": "Ciko",
+    "picture": "https://placehold.co/96x96/ADD8E6/000000?text=Ciko",
+    "age": 24,
+    "style": "Streetwear",
+    "location": "Bandung"
+  },
+  {
+    "id": 2,
+    "name": "Dodo",
+    "picture": "https://placehold.co/96x96/ADD8E6/000000?text=Dodo",
+    "age": 21,
+    "style": "Korean",
+    "location": "Surabaya"
+  },
+  {
+    "id": 3,
+    "name": "Echa",
+    "picture": "https://placehold.co/96x96/ADD8E6/000000?text=Echa",
+    "age": 23,
+    "style": "Chic",
+    "location": "Yogyakarta"
+  }
+]
