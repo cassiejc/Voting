@@ -1,5 +1,5 @@
-const FashionVote = artifacts.require("FashionVote");
+const FashionVoting = artifacts.require("FashionVoting");
 
 module.exports = function (deployer) {
-  deployer.deploy(FashionVote);
+  deployer.deploy(FashionVoting);
 };

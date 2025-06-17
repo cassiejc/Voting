@@ -1,90 +1,77 @@
-// app.js
 App = {
   web3Provider: null,
   contracts: {},
-  account: null,
+  account: "",
 
   init: async function () {
-    await $.getJSON('../participants.json', function (data) {
-      var participantsRow = $('#participantsRow');
-      var participantTemplate = $('#participantTemplate');
-
-      for (let i = 0; i < data.length; i++) {
-        var card = $(participantTemplate.html());
-
-        card.find('[data-id="participant-image"]').attr('src', data[i].picture);
-        card.find('[data-id="participant-name"]').text(data[i].name);
-        card.find('[data-id="participant-age"]').text(`${data[i].age} years old`);
-        card.find('[data-id="participant-style"]').text(data[i].style || "Casual");
-        card.find('[data-id="participant-location"]').text(data[i].location);
-        card.find('.vote-btn').attr('data-id', data[i].id);
-
-        participantsRow.append(card);
-      }
-    });
     return App.initWeb3();
   },
 
   initWeb3: async function () {
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
-      try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-      } catch (error) {
-        console.error("User denied account access");
-      }
-    } else if (window.web3) {
-      App.web3Provider = window.web3.currentProvider;
+      await ethereum.request({ method: "eth_requestAccounts" });
+      web3 = new Web3(App.web3Provider);
     } else {
-      App.web3Provider = new Web3.providers.HttpProvider('http://127.0.0.1:7545');
+      alert("Install MetaMask!");
+      return;
     }
-    web3 = new Web3(App.web3Provider);
-
     return App.initContract();
   },
 
   initContract: function () {
-    $.getJSON('build/contracts/FashionVoting.json', function (data) {
-      var VotingArtifact = data;
-      App.contracts.FashionVoting = TruffleContract(VotingArtifact);
+    $.getJSON("../build/contracts/FashionVoting.json", function (data) {
+      App.contracts.FashionVoting = TruffleContract(data);
       App.contracts.FashionVoting.setProvider(App.web3Provider);
-
-      return App.bindEvents();
+      return App.render();
     });
   },
 
-  bindEvents: function () {
-    $(document).on('click', '.vote-btn', App.handleVote);
-  },
+  render: async function () {
+  const accounts = await web3.eth.getAccounts();
+  App.account = accounts[0];
+  $("#account").text("Your account: " + App.account);
 
-  handleVote: function (event) {
-    event.preventDefault();
-    var participantId = parseInt($(event.target).data('id'));
+  const instance = await App.contracts.FashionVoting.deployed();
 
-    web3.eth.getAccounts(function (error, accounts) {
-      if (error) {
-        console.error(error);
-      }
-      App.account = accounts[0];
+  try {
+    const total = await instance.getTotalParticipants.call();
+    console.log("Total participants:", total.toString());
 
-      App.contracts.FashionVoting.deployed().then(function (instance) {
-        return instance.vote(participantId, { from: App.account });
-      }).then(function () {
-        App.displayStatus("Vote successful!");
-      }).catch(function (err) {
-        console.error(err.message);
-        App.displayStatus("Vote failed. " + err.message);
+    $("#participant-list").empty();
+
+    for (let i = 0; i < total; i++) {
+      const p = await instance.getParticipant.call(i);
+      console.log("Participant", i, p);
+      const card = `
+        <div class="card">
+          <h3>${p[0]}</h3>
+          <p>${p[3]} years old</p>
+          <p>${p[1]}</p>
+          <p>${p[2]}</p>
+          <p>Votes: ${p[4]}</p>
+          <button class="vote-btn" data-id="${i}">Vote</button>
+        </div>
+      `;
+      $("#participant-list").append(card);
+    }
+
+    $(".vote-btn").off("click").on("click", async function () {
+      const index = $(this).data("id");
+      await instance.vote(index, {
+        from: App.account,
+        value: web3.utils.toWei("0.01", "ether"),
+        gas: 300000,
       });
+      alert("Voted successfully!");
+      App.render(); // refresh
     });
-  },
-
-  displayStatus: function (message) {
-    var statusDiv = $('#status');
-    statusDiv.text(message).removeClass('hidden').addClass('block');
-    setTimeout(() => {
-      statusDiv.removeClass('block').addClass('hidden');
-    }, 5000);
+  } catch (error) {
+    console.error("Error while rendering participants:", error);
   }
+}
+
+
 };
 
 $(function () {
