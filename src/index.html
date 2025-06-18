@@ -10,7 +10,6 @@
         font-family: Arial, sans-serif;
         padding: 20px;
       }
-
       .card {
         border: 1px solid #ccc;
         padding: 16px;
@@ -18,17 +17,16 @@
         border-radius: 8px;
         max-width: 300px;
       }
-
-      .vote-btn {
+      .vote-btn, #close-btn {
         background-color: #007bff;
         color: white;
         border: none;
         padding: 8px 12px;
         border-radius: 4px;
         cursor: pointer;
+        margin-top: 8px;
       }
-
-      .vote-btn:hover {
+      .vote-btn:hover, #close-btn:hover {
         background-color: #0056b3;
       }
     </style>
@@ -36,7 +34,9 @@
   <body>
     <h1>Fashion Voting DApp</h1>
     <p id="account"></p>
+    <p id="voting-status"></p>
     <div id="participant-list"></div>
+    <button id="close-btn" style="display:none;">Close Voting & Send Reward</button>
 
     <script src="app.js"></script>
   </body>

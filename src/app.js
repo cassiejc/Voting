@@ -28,21 +28,19 @@ App = {
   },
 
   render: async function () {
-  const accounts = await web3.eth.getAccounts();
-  App.account = accounts[0];
-  $("#account").text("Your account: " + App.account);
+    const accounts = await web3.eth.getAccounts();
+    App.account = accounts[0];
+    $("#account").text("Your account: " + App.account);
 
-  const instance = await App.contracts.FashionVoting.deployed();
+    const instance = await App.contracts.FashionVoting.deployed();
+    const votingOpen = await instance.isVotingOpen();
+    $("#voting-status").text(`Voting is ${votingOpen ? "open" : "closed"}.`);
 
-  try {
-    const total = await instance.getTotalParticipants.call();
-    console.log("Total participants:", total.toString());
-
+    const total = await instance.getTotalParticipants();
     $("#participant-list").empty();
 
     for (let i = 0; i < total; i++) {
-      const p = await instance.getParticipant.call(i);
-      console.log("Participant", i, p);
+      const p = await instance.getParticipant(i);
       const card = `
         <div class="card">
           <h3>${p[0]}</h3>
@@ -50,9 +48,8 @@ App = {
           <p>${p[1]}</p>
           <p>${p[2]}</p>
           <p>Votes: ${p[4]}</p>
-          <button class="vote-btn" data-id="${i}">Vote</button>
-        </div>
-      `;
+          ${votingOpen ? `<button class="vote-btn" data-id="${i}">Vote</button>` : ""}
+        </div>`;
       $("#participant-list").append(card);
     }
 
@@ -63,15 +60,22 @@ App = {
         value: web3.utils.toWei("0.01", "ether"),
         gas: 300000,
       });
-      alert("Voted successfully!");
-      App.render(); // refresh
+      alert("Vote successful!");
+      App.render();
     });
-  } catch (error) {
-    console.error("Error while rendering participants:", error);
+
+    if (App.account.toLowerCase() === "0x55491b57fa3ed81136d288828e1dd4f3d4b2c0ec") {
+      $("#close-btn").show();
+    } else {
+      $("#close-btn").hide();
+    }
+
+    $("#close-btn").off("click").on("click", async function () {
+      await instance.closeVotingAndSendReward({ from: App.account, gas: 300000 });
+      alert("Voting closed and reward sent!");
+      App.render();
+    });
   }
-}
-
-
 };
 
 $(function () {
