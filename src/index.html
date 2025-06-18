@@ -1,43 +1,170 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Fashion Voting DApp</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/truffle-contract@4.0.31/dist/truffle-contract.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-      }
-      .card {
-        border: 1px solid #ccc;
-        padding: 16px;
-        margin-bottom: 12px;
-        border-radius: 8px;
-        max-width: 300px;
-      }
-      .vote-btn, #close-btn {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 8px;
-      }
-      .vote-btn:hover, #close-btn:hover {
-        background-color: #0056b3;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Fashion Voting DApp</h1>
-    <p id="account"></p>
-    <p id="voting-status"></p>
-    <div id="participant-list"></div>
-    <button id="close-btn" style="display:none;">Close Voting & Send Reward</button>
+<head>
+  <title>Fashion Voting DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/truffle-contract@4.0.31/dist/truffle-contract.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .status-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .card {
+      background-color: white;
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 350px;
+      display: inline-block;
+      margin-right: 15px;
+      vertical-align: top;
+    }
+    
+    .card h3 {
+      color: #333;
+      margin-top: 0;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    
+    .vote-btn, #close-btn, #reset-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    .vote-btn:hover, #close-btn:hover, #reset-btn:hover {
+      background-color: #0056b3;
+    }
+    
+    .vote-btn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    #reset-btn {
+      background-color: #dc3545;
+      margin-left: 10px;
+    }
+    
+    #reset-btn:hover {
+      background-color: #c82333;
+    }
+    
+    #admin-controls {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    .admin-title {
+      color: #856404;
+      margin: 0 0 15px 0;
+      font-size: 18px;
+    }
+    
+    #contract-balance {
+      font-weight: bold;
+      color: #155724;
+      margin-bottom: 10px;
+    }
+    
+    .participant-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .closed-notice {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .winner-announcement {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 20px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .winner-announcement h3 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+    }
+    
+    .account-info {
+      background-color: #e9ecef;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎭 Fashion Voting DApp 🎭</h1>
+    <div class="account-info">
+      <p id="account"></p>
+    </div>
+  </div>
 
-    <script src="app.js"></script>
-  </body>
+  <div class="status-container">
+    <p id="voting-status"></p>
+    <div id="winner-info"></div>
+  </div>
+
+  <div class="participant-grid">
+    <div id="participant-list"></div>
+  </div>
+
+  <div id="admin-controls" style="display:none;">
+    <h3 class="admin-title">🔧 Admin Controls</h3>
+    <p id="contract-balance"></p>
+    <button id="close-btn" style="display:none;">🔒 Close Voting & Send 10 ETH Reward</button>
+    <button id="reset-btn" style="display:none;">🔄 Reset Voting Results</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
 </html>
