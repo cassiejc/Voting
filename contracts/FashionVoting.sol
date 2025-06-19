@@ -17,6 +17,9 @@ contract FashionVoting {
     bool public votingClosed;
     uint public winnerIndex;
     bool public hasWinner;
+    
+    // Keep track of all voters for reset functionality
+    address[] public voters;
 
     event VotingClosed(uint winnerIndex, string winnerName);
     event VotingReset();
@@ -53,6 +56,7 @@ contract FashionVoting {
 
         participants[index].voteCount += 1;
         hasVoted[msg.sender] = true;
+        voters.push(msg.sender);
     }
 
     function getWinnerIndex() internal view returns (uint) {
@@ -99,8 +103,12 @@ contract FashionVoting {
         winnerIndex = 0;
         
         // Clear all voter records
-        // Note: In practice, you might want to keep track of all voters to reset them
-        // For simplicity, we'll rely on frontend to handle this
+        for (uint i = 0; i < voters.length; i++) {
+            hasVoted[voters[i]] = false;
+        }
+        
+        // Clear voters array
+        delete voters;
         
         emit VotingReset();
     }
